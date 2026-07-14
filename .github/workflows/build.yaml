@@ -9,12 +9,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      # FIX: Geüpdatet naar v4
+      - uses: actions/checkout@v4
       
+      # FIX: Geüpdatet naar v5 en Python 3.11 voor maximale stabiliteit
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.11'
           
       - name: Install ESPHome
         run: pip install esphome
@@ -22,8 +24,9 @@ jobs:
       - name: Build Firmware
         run: esphome compile sniffer.yaml
         
+      # FIX: Geüpdatet naar v4 om de GitHub blokkade op te lossen
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sniffer-firmware
           path: .esphome/build/sniffer/.pioenvs/sniffer/firmware.bin
