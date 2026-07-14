@@ -2,10 +2,9 @@ esphome:
   name: sniffer
 
 esp32:
-  board: esp32-s3-devkitc-1
   variant: esp32s3
   framework:
-    type: arduino
+    type: espidf
 
 # Geen logger, geen extra vlaggen. Puur de UART-logica.
 uart:
