@@ -1,21 +1,14 @@
 esphome:
   name: sniffer
   friendly_name: Sniffer
-  platformio_options:
-    board_build.partitions: default.csv
 
 esp32:
-  board: esp32-s3-devkitc-1
+  board: esp32-s3-devkitc-1-n8
   variant: esp32s3
   framework:
     type: arduino
-    # DIT IS DE ENIGE JUISTE MANIER om USB-CDC te forceren zonder C++ conflicten
-    # bij de S3-devkitc definitie.
-    sdkconfig:
-      CONFIG_ARDUINO_USB_CDC_ON_BOOT: "y"
 
-# LOGGER UITGESCHAKELD: Dit is essentieel voor je debugging. 
-# Als hij nu niet meer crasht, weten we dat de logger de boosdoener was.
+# Logger is uitgeschakeld om hardware-conflicten te vermijden.
 logger:
 
 api:
@@ -52,6 +45,6 @@ uart:
               uint8_t slave_id = bytes[0];
               uint8_t func_code = bytes[1];
               if (func_code == 0x06 || func_code == 0x10) {
-                 // Geen logging commando's in deze fase, puur stabiel blijven draaien
+                 // Geen logging commando's in deze fase.
               }
             }
