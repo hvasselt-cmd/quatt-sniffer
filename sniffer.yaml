@@ -4,7 +4,7 @@ esphome:
 esp32:
   variant: esp32s3
   framework:
-    type: espidf
+    type: arduino
 
 # Geen logger, geen extra vlaggen. Puur de UART-logica.
 uart:
