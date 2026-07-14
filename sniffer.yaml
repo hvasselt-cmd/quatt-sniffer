@@ -1,0 +1,67 @@
+# Basisconfiguratie behouden
+esphome:
+  name: sniffer
+  friendly_name: Sniffer
+
+# KRITIEKE AANPASSING: Framework gewijzigd naar 'arduino' en Native USB geforceerd
+esp32:
+  board: esp32-s3-devkitc-1
+  variant: esp32s3
+  framework:
+    type: arduino
+    platformio_options:
+      build_flags:
+        - "-DARDUINO_USB_MODE=1"
+        - "-DARDUINO_USB_CDC_ON_BOOT=1"
+
+# AANPASSING: Logger expliciet verteld om de Native USB hardware te gebruiken
+logger:
+  level: DEBUG
+  hardware_uart: USB_SERIAL_JTAG
+
+# Standaard API en OTA blokken behouden (jouw sleutels)
+api:
+  encryption:
+    key: "IAlNtziiglQAjaRU8Lp6YwIIERixTbUdjULGhIwQHHk="
+
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: "DieIsVanOns"
+  password: "GovertFlinckie6"
+  ap:
+    ssid: Sniffer Fallback Hotspot
+    password: "xeusdJE6v7zn"
+
+captive_portal:
+
+# --- NIEUWE CODE: DE VEILIGE RS485 SNIFFER ---
+uart:
+  - id: quatt_sniffer
+    rx_pin: GPIO18
+    # tx_pin: GPIO17     # BEWUST WEGGELATEN: Fysieke blokkade om zenden onmogelijk te maken!
+    # rts_pin: GPIO21    # BEWUST WEGGELATEN: Direction-pin kan nooit op 'zenden' worden gezet.
+    baud_rate: 9600      # 9600 is de Quatt Modbus standaard
+    data_bits: 8
+    parity: NONE
+    stop_bits: 1
+    debug:
+      direction: RX
+      dummy_receiver: true
+      after:
+        timeout: 50ms    # Wacht op 50ms stilte op de bus (einde van een bericht)
+      sequence:
+        - lambda: |-
+            if (bytes.size() >= 4) {
+              uint8_t slave_id = bytes[0];
+              uint8_t func_code = bytes[1];
+              std::string hex_str = format_hex_pretty(bytes);
+              // Function code 0x06 (Write Single) of 0x10 (Write Multiple) zijn commando's
+              if (func_code == 0x06 || func_code == 0x10) {
+                ESP_LOGW("MODBUS_CMD", "ACTIE! Slave: %02X, Func: %02X -> %s", slave_id, func_code, hex_str.c_str());
+              } else {
+                // Gebruik ESP_LOGV (Verbose) voor lees-acties, dan kun je ze later makkelijk filteren
+                ESP_LOGV("MODBUS_READ", "Polling: Slave: %02X -> %s", slave_id, hex_str.c_str());
+              }
+            }
