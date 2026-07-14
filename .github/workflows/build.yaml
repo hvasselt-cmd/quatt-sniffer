@@ -1,0 +1,29 @@
+name: Build ESPHome Firmware
+on:
+  push:
+    paths:
+      - 'sniffer.yaml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      - name: Install ESPHome
+        run: pip install esphome
+        
+      - name: Build Firmware
+        run: esphome compile sniffer.yaml
+        
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: sniffer-firmware
+          path: .esphome/build/sniffer/.pioenvs/sniffer/firmware.bin
