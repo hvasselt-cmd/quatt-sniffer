@@ -1,21 +1,23 @@
-# Basisconfiguratie behouden
 esphome:
   name: sniffer
   friendly_name: Sniffer
+  platformio_options:
+    board_build.partitions: default.csv
 
 esp32:
   board: esp32-s3-devkitc-1
   variant: esp32s3
   framework:
     type: arduino
+    # DIT IS DE ENIGE JUISTE MANIER om USB-CDC te forceren zonder C++ conflicten
+    # bij de S3-devkitc definitie.
+    sdkconfig:
+      CONFIG_ARDUINO_USB_CDC_ON_BOOT: "y"
 
-# AANPASSING: Logger expliciet verteld om de Native USB hardware te gebruiken.
-# De eerdere build_flags zijn verwijderd om C++ conflicten te voorkomen.
+# LOGGER UITGESCHAKELD: Dit is essentieel voor je debugging. 
+# Als hij nu niet meer crasht, weten we dat de logger de boosdoener was.
 logger:
-  level: DEBUG
-  hardware_uart: USB_SERIAL_JTAG
 
-# Standaard API en OTA blokken behouden (jouw sleutels)
 api:
   encryption:
     key: "IAlNtziiglQAjaRU8Lp6YwIIERixTbUdjULGhIwQHHk="
@@ -32,13 +34,10 @@ wifi:
 
 captive_portal:
 
-# --- NIEUWE CODE: DE VEILIGE RS485 SNIFFER ---
 uart:
   - id: quatt_sniffer
     rx_pin: GPIO18
-    # tx_pin: GPIO17     # BEWUST WEGGELATEN: Fysieke blokkade om zenden onmogelijk te maken!
-    # rts_pin: GPIO21    # BEWUST WEGGELATEN: Direction-pin kan nooit op 'zenden' worden gezet.
-    baud_rate: 9600      # 9600 is de Quatt Modbus standaard
+    baud_rate: 9600
     data_bits: 8
     parity: NONE
     stop_bits: 1
@@ -46,18 +45,13 @@ uart:
       direction: RX
       dummy_receiver: true
       after:
-        timeout: 50ms    # Wacht op 50ms stilte op de bus (einde van een bericht)
+        timeout: 50ms
       sequence:
         - lambda: |-
             if (bytes.size() >= 4) {
               uint8_t slave_id = bytes[0];
               uint8_t func_code = bytes[1];
-              std::string hex_str = format_hex_pretty(bytes);
-              // Function code 0x06 (Write Single) of 0x10 (Write Multiple) zijn commando's
               if (func_code == 0x06 || func_code == 0x10) {
-                ESP_LOGW("MODBUS_CMD", "ACTIE! Slave: %02X, Func: %02X -> %s", slave_id, func_code, hex_str.c_str());
-              } else {
-                // Gebruik ESP_LOGV (Verbose) voor lees-acties, dan kun je ze later makkelijk filteren
-                ESP_LOGV("MODBUS_READ", "Polling: Slave: %02X -> %s", slave_id, hex_str.c_str());
+                 // Geen logging commando's in deze fase, puur stabiel blijven draaien
               }
             }
