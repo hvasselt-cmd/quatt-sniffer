@@ -1,32 +1,13 @@
 esphome:
   name: sniffer
-  friendly_name: Sniffer
 
 esp32:
-  board: esp32-s3-devkitc-1-n8
+  board: esp32-s3-devkitc-1
   variant: esp32s3
   framework:
     type: arduino
 
-# Logger is uitgeschakeld om hardware-conflicten te vermijden.
-logger:
-
-api:
-  encryption:
-    key: "IAlNtziiglQAjaRU8Lp6YwIIERixTbUdjULGhIwQHHk="
-
-ota:
-  - platform: esphome
-
-wifi:
-  ssid: "DieIsVanOns"
-  password: "GovertFlinckie6"
-  ap:
-    ssid: "Sniffer Fallback Hotspot"
-    password: "xeusdJE6v7zn"
-
-captive_portal:
-
+# Geen logger, geen extra vlaggen. Puur de UART-logica.
 uart:
   - id: quatt_sniffer
     rx_pin: GPIO18
@@ -42,9 +23,5 @@ uart:
       sequence:
         - lambda: |-
             if (bytes.size() >= 4) {
-              uint8_t slave_id = bytes[0];
-              uint8_t func_code = bytes[1];
-              if (func_code == 0x06 || func_code == 0x10) {
-                 // Geen logging commando's in deze fase.
-              }
+               // De modbus-logica is hier nu uitgeschakeld om elke CPU-overhead te elimineren.
             }
