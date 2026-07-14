@@ -3,18 +3,14 @@ esphome:
   name: sniffer
   friendly_name: Sniffer
 
-# KRITIEKE AANPASSING: Framework gewijzigd naar 'arduino' en Native USB geforceerd
 esp32:
   board: esp32-s3-devkitc-1
   variant: esp32s3
   framework:
     type: arduino
-    platformio_options:
-      build_flags:
-        - "-DARDUINO_USB_MODE=1"
-        - "-DARDUINO_USB_CDC_ON_BOOT=1"
 
-# AANPASSING: Logger expliciet verteld om de Native USB hardware te gebruiken
+# AANPASSING: Logger expliciet verteld om de Native USB hardware te gebruiken.
+# De eerdere build_flags zijn verwijderd om C++ conflicten te voorkomen.
 logger:
   level: DEBUG
   hardware_uart: USB_SERIAL_JTAG
@@ -31,7 +27,7 @@ wifi:
   ssid: "DieIsVanOns"
   password: "GovertFlinckie6"
   ap:
-    ssid: Sniffer Fallback Hotspot
+    ssid: "Sniffer Fallback Hotspot"
     password: "xeusdJE6v7zn"
 
 captive_portal:
